@@ -1,0 +1,145 @@
+# Copyright (c) 2010 University of Illinois
+# All rights reserved.
+#
+# Developed by:           DeNovo group, Graphis@Illinois
+#                         University of Illinois
+#                         http://denovo.cs.illinois.edu
+#                         http://graphics.cs.illinois.edu
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimers.
+#
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following disclaimers
+#    in the documentation and/or other materials provided with the
+#    distribution.
+#
+#  * Neither the names of DeNovo group, Graphics@Illinois, 
+#    University of Illinois, nor the names of its contributors may be used to 
+#    endorse or promote products derived from this Software without specific 
+#    prior written permission.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+include Makefile.conf
+
+include $(LEVEL)/Makefile.common
+
+PARKD_EXEC = $(LEVEL)/parkd-$(IMPL)
+TEST_DIR = Regression_tests
+GOLDEN_DIR = $(LEVEL)/Tests/Golden_Outputs
+BENCHMARK_DIR = Benchmark
+
+TEST_MODELS_NAME = $(notdir $(subst .obj,,$(TEST_MODELS)))
+
+.PHONY: check check-header clean benchmark benchmark-csv benchmark-header     \
+        $(BENCHMARK_DIR)/%.csv                                                \
+        $(TEST_DIR)/%.n1.diff $(TEST_DIR)/%.n4.diff                           \
+        $(TEST_DIR)/%.n1.out $(TEST_DIR)/%.n4.out                             \
+        clean clean-check clean-benchmark
+
+.SECONDARY: $(TEST_DIR)/%.n1.out $(TEST_DIR)/%.n4.out
+
+###########################################################################
+# Regression test (check) targets
+###########################################################################
+
+check-header:
+	@$(ECHO) "Checking $(IMPL):"
+
+check: clean-check $(TEST_DIR)                                                \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n1.diff)      \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n1.prescan.diff)      \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n4.diff)
+	@$(ECHO) "Regression test completed."
+
+check-one: clean-check check-header $(TEST_DIR)                               \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n1.diff)      \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n1.prescan.diff)      \
+       $(foreach model,$(TEST_MODELS_NAME),$(TEST_DIR)/$(model).n4.diff)
+
+$(TEST_DIR):
+	@mkdir -p $@
+
+$(TEST_DIR)/%.n1.out: $(PARKD_EXEC) $(MODELS_DIR)/%.blob
+	@$(ECHO) "      RUN  "$*
+	-LD_LIBRARY_PATH=$(TBB_LIB) ./$(PARKD_EXEC) -q -n 1 -o                    \
+    $(MODELS_DIR)/$*.blob > $@
+
+$(TEST_DIR)/%.n1.diff: $(TEST_DIR)/%.n1.out
+	@$(ECHO) "     DIFF  "$*
+	-diff --ignore-blank-lines $(GOLDEN_DIR)/$*.d8.treeout.txt $< > $@
+
+$(TEST_DIR)/%.n1.prescan.out: $(PARKD_EXEC) $(MODELS_DIR)/%.blob
+	@$(ECHO) "      RUN  "$*
+	-LD_LIBRARY_PATH=$(TBB_LIB) ./$(PARKD_EXEC) -q -n 1 -o --superfluous-prescans   \
+    $(MODELS_DIR)/$*.blob > $@
+
+$(TEST_DIR)/%.n1.prescan.diff: $(TEST_DIR)/%.n1.prescan.out
+	@$(ECHO) "     DIFF  "$*
+	-diff --ignore-blank-lines $(GOLDEN_DIR)/$*.d8.treeout.txt $< > $@
+
+$(TEST_DIR)/%.n4.out: $(PARKD_EXEC) $(MODELS_DIR)/$*
+	-LD_LIBRARY_PATH=$(TBB_LIB) ./$(PARKD_EXEC) -q -n 4 -o                    \
+	$(MODELS_DIR)/$*.blob > $@
+
+$(TEST_DIR)/%.n4.diff: $(TEST_DIR)/%.n4.out
+	-diff --ignore-blank-lines $(GOLDEN_DIR)/$*.d8.treeout.txt $< > $@
+
+###########################################################################
+# Benchmark targets - need to set BENCH_THREADS in Makefile.common
+###########################################################################
+
+benchmark:
+	@$(ECHO) TO BE IMPLEMENTED.
+
+$(BENCHMARK_DIR)/%.csv: $(BENCHMARK_DIR) $(PARKD_EXEC) $(MODELS_PACKED)
+	@printf "%12s" $*
+	@rm -f $@
+	@LD_LIBRARY_PATH=$(TBB_LIB) ./$(PARKD_EXEC) --csv-header 2> $@
+	@for t in $(BENCH_THREADS); do                                            \
+       $(ECHO) -ne " x"$$t;                                                   \
+       LD_LIBRARY_PATH=$(TBB_LIB) ./$(PARKD_EXEC) --csv -n $$t                \
+                                  $(MODELS_DIR)/$*.blob 2>> $@;               \
+       done
+	@$(ECHO) " ==> Results/"$(IMPL)/$@
+
+benchmark-csv: $(BENCHMARK_DIR) benchmark-header                              \
+               $(foreach model,$(MODELS),                                     \
+                         $(BENCHMARK_DIR)/$(subst .obj,,$(notdir $(model))).csv)
+
+benchmark-header:
+	@$(ECHO) "Benchmarking $(IMPL):"
+
+$(BENCHMARK_DIR):
+	@mkdir -p $(BENCHMARK_DIR)
+
+###########################################################################
+# Clean targets
+###########################################################################
+
+clean: clean-check clean-benchmark
+
+clean-check:
+	@$(ECHO) "    CLEAN  "$(TEST_DIR);
+	rm -rf $(TEST_DIR)
+
+clean-benchmark:
+	@$(ECHO) "    CLEAN  "$(BENCHMARK_DIR)
+	rm -rf $(BENCHMARK_DIR)
+
+.NOTPARALLEL:

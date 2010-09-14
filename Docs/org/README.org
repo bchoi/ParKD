@@ -1,0 +1,305 @@
+#+TITLE:   ParKD README
+#+LANGUAGE:  en
+#+OPTIONS:   H:2 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:nil
+#+OPTIONS:   author:nil creator:nil timestamp:t
+#+INFOJS_OPT: view:nil toc:2 ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+
+# Copyright (c) 2010 University of Illinois
+# All rights reserved.
+#
+# Developed by:           DeNovo group, Graphis@Illinois
+#                         University of Illinois
+#                         http://denovo.cs.illinois.edu
+#                         http://graphics.cs.illinois.edu
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimers.
+#
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following disclaimers
+#    in the documentation and/or other materials provided with the
+#    distribution.
+#
+#  * Neither the names of DeNovo group, Graphics@Illinois, 
+#    University of Illinois, nor the names of its contributors may be used to 
+#    endorse or promote products derived from this Software without specific 
+#    prior written permission.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+* Introduction
+  The k-D tree is a well-studied acceleration data structure for ray
+  tracing. It is used to organize primitives in a scene to allow efficient
+  execution of intersection operations between rays and the primitives. The
+  highest quality k-D tree can be obtained using greedy cost optimization based
+  on a surface area heuristc (SAH). While the high quality enables very fast
+  ray tracing times, a key drawback is that the k-D tree construction time
+  remains prohibitively expensive. This cost is unreasonable for rendering
+  dynamic scenes for future visual computing applications on emerging multicore
+  systems. Much work has therefore been focused on faster parallel k-D tree
+  construction performance at the expense of approximating or ignoring SAH
+  computation, which produces k-D trees that degrade rendering time. Here, we
+  present new, faster multicore algorithms for building precise SAH-optimized
+  k-D trees.
+
+  This package, ParKD, contains implementations of all of SAH k-D tree
+  construction algorithms discussed in the paper published at High-Performance
+  Graphics 2010 [fn:HPG]. All the implementations are written in C++ using
+  Intel Threading Building Blocks (tm).
+
+  |--------------------------------------------------+-------------------------|
+  | Algorithm                                        | Directory               |
+  |--------------------------------------------------+-------------------------|
+  | 1. Serial                                        | Accel-serial            |
+  | 2. "Nested" parallel                             | Accel-nested            |
+  | 3. "In-place" parallel                           | Accel-inplace-AoS       |
+  | 4. "In-place" parallel (AoS-to-SoA [fn:AoS2SoA]) | Accel-inplace-SoA       |
+  |--------------------------------------------------+-------------------------|
+
+[fn:HPG] Byn Choi, Rakesh Komuravelli, Victor Lu, Hyojin Sung, Robert
+L. Bocchino, Sarita V. Adve, John C. Hart "Parallel SAH k-D Tree Construction"
+Proceedings of High-Performance Graphics (HPG), June, 2010
+
+[fn:AoS2SoA] "Array-of-Structs to Struct-of-Arrays" optimization
+
+* How to...
+
+** Setup
+
+*** TBB configuration
+    ParKD uses Intel Threading Building Blocks (tm) extensively. Please modify
+    the Makefile.tbb_version file according to your TBB installation.
+
+*** External utilities
+    ParKD uses a number of external utilities. These are defined at the top of
+    Makefile.common.
+
+** Build
+   Simply invoking "make" builds all the available implementations (Accel-*
+   directories). For every Accel-# directory, an executable named "parkd-#" is
+   created. The executables can be built individually as well: "make parkd-#".
+
+   debug binaries can be built by simply attaching "-debug" to the target
+   name, such as "all-debug", "parkd-inplace-SoA-debug", and "packer-debug".
+
+   By default, Makefile/s suppress excessive messages. To view the actual
+   commands executed by make, define VERBOSE variable.
+
+   > make VERBOSE=1
+
+*** packer
+    We found that loading the mesh files can be very time-consuming, due mostly
+    to their size. We include six input models (in Tests/Models/) that
+    consists of a few thousand triangles to over a million triangles.
+
+                          |------------+----------------|
+                          | Mesh       | # of triangles |
+                          |------------+----------------|
+                          | teapot.obj |           2256 |
+                          | bunny.obj  |          69451 |
+                          | fairy.obj  |         171949 |
+                          | angel.obj  |         474048 |
+                          | dragon.obj |         871414 |
+                          | happy.obj  |        1087716 |
+                          |------------+----------------|
+
+    Loading bigger models take considerable amount of time, by the use of
+    ASCII-based .obj file format. "packer" is a custom utility that converts
+    the .obj input file to a binary representation that can be readily loaded
+    by the parkd binaries. This can cut down the loading time by up to 75%,
+    which significantly speeds up the benchmarking process. The "packed" .obj
+    files are given .blob suffix.
+
+** Running
+   The simplest way to run a parkd binary is to simply specify the input mesh.
+
+   > ./parkd-inplace-SoA Tests/Models/teapot.blob
+
+   The parkd binary can accept both plain .obj and .blob file types.
+
+   For help:
+
+   > ./parkd-inplace-SoA -h
+
+*** Output
+
+    Here is an example output. Note that this is printed on stderr stream.
+
+#+BEGIN_EXAMPLE 
+-------------------------------------------------------------------------
+ParKD - In-place (SoA) version                                                  
+                                                                                
+        Input mesh : Tests/Models/teapot.blob                                   
+           Threads : 1                                                          
+          MaxDepth : 8                                                          
+                                                                                
+              TIMING INFORMATION (in CPU ticks)                                 
+                                                                                
+Start time                        :    57996741994251831                        
+Mesh load finish time             :              +876186                        
+Build start time                  :    57996741995128053                        
+Build finish time                 :            +21368025                        
+                                                                                
+     In-place (SoA) TIMING INFORMATION (in CPU ticks)                           
+                                                                                
+Start time                        :    57996741995128926                        
+Init (CreateEdges)                :             +2021634                        
+Init (parallel_sort)              :             +3198726                        
+Init (SetupTriangles)             :              +141876                        
+Init (AoS->SoA)                   :              +764937                        
+Init (Total)                      :             +6127173                        
+                                                                                
+Build start time                  :    57996742001256225                        
+FindBestPlane time (Avg)          :              1679724                        
+NewGen time (Avg)                 :                22308                        
+ClassifyTriangles time (Avg)      :               148776                        
+Fill time                         :               381951                        
+Total build time                  :             21348666                        
+Total build time (w/o Init)       :             15221367       
+-------------------------------------------------------------------------
+#+END_EXAMPLE
+    
+    First, the header portion includes identifying marks to indicate the
+    implementation, the input used, the number of hardware threads used, and
+    finally the depth of the tree constructed.
+
+    Second portion, staring with the line "TIMING INFORMATION" shows the
+    implementation-independent timing statistics. Note that the numbers
+    starting with "+" indicates the time relative to the previous line. For
+    instance, in this invocation, the input mesh was loaded in 876186 CPU
+    ticks.
+
+    |-----------------------+-----------------------------------|
+    | Title                 | Description                       |
+    |-----------------------+-----------------------------------|
+    | Start time            | At the beginning of execution     |
+    | Mesh load finish time | Right after the input processing  |
+    | Build start time      | At the implementation entry point |
+    | Build finish time     | At the implementation exit point  |
+    |-----------------------+-----------------------------------|
+
+    (Build finish time) - (Build start time) represents the run time of the
+    implementation function perceived from outside.
+
+    The last portion contains the implementation-dependent timing
+    statistics. More detailed information on each item can be found in later
+    sections of this document.
+
+** Regression Tests
+   "make check" works as expected, invoking internal self-tests. Models used by
+   the self-tests can be configured by changing the "TEST_MODELS" variable
+   found in Makefile.common.
+
+** Benchmarking
+   Currently, the x86-specific "rdtsc" instruction is used to measure
+   timing. rdtsc instruction returns an unsigned 64-bit integer that represents
+   the number of CPU ticks since boot.
+
+   The number of hardware threads used for benchmarking purposes can be
+   configured by changing the "BENCH_THREADS" variable found in
+   Makefile.common.
+
+   The input meshes used can also be configured using the "MODELS" variable
+   found in Makefile.common.
+
+*** TODO Quick run (benchmark) - overall scalability analysis
+    Under development.
+
+*** Detailed timing (benchmark-csv) - csv output
+    Gathering more detailed, per-phase timing information can be achieved by
+    "make benchmark-csv". For each implementation, this runs the parkd binary
+    using varied number of threads ("BENCH_THREADS") for all the specified
+    inputs. The result is a set of .csv files, one per model, that contains a
+    detailed, per-phase timing information, a line per invocation (threads).
+
+* make Target Index
+|-----------------+------------------------------------------------|
+|-----------------+------------------------------------------------|
+| all, all-debug  | Build all targets                              |
+|                 | parkd-* + packer                               |
+|-----------------+------------------------------------------------|
+| parkd-*(-debug) | Build the parkd executable using the           |
+|                 | implementation found in Accel-* directory      |
+| packer(-debug)  | Build packer executable                        |
+| dev(-debug)     | Used to build dev- targets                     |
+|-----------------+------------------------------------------------|
+| benchmark       | Run all benchmarks                             |
+| benchmark-*     | Run benchmark using Accel-* only               |
+| benchmark-csv   | Create .csv output for all implementations     |
+| benchmark-csv-* | Create .csv output using Accel-* only          |
+|-----------------+------------------------------------------------|
+| check           | Run regression tests for all implementations   |
+| check-*         | Run regression tests for Accel-* only          |
+|-----------------+------------------------------------------------|
+| clean           | Clean all the executables and .o files         |
+| clean-results   | Clean up regression test and benchmark results |
+| clean-models    | Clean up uncompressed and packed input files   |
+| clean-all       | clean + clean-results + clean-models           |
+|-----------------+------------------------------------------------|
+
+* Acknowledgements
+** Sponsors
+   This work was funded by the Universal Parallel Computing Research Center at
+   the University of Illinois at Urbana-Champaign
+   http://upcrc.illinois.edu. The Center is sponsored by Intel Corporation and
+   Microsoft Corporation.
+
+** Credits
+
+*** Byn Choi
+    - Accel-nested algorithm design/implementation
+    - Accel-inplace-{AoS, SoA} algorithm design/implementation
+    - Packer
+    - Build system
+    - Documentation
+
+*** Rakesh Komuravelli
+    - Accel-nested algorithm design
+    - Shevtsov's [fn:shevtsov] (Accel-shevtsov) implementation
+
+*** Victor Lu
+    - Original serial construction algorithm implementation
+    - Original ray tracing engine
+    - Accel-nested algorithm implementation
+    - Manta [fn:manta] integration
+
+*** Hyojin Sung
+    - Accel-nested algorithm design/implementation
+    - Parallel merge sort routine
+    - Code cleanup
+    - Documentation
+
+*** Robert L. Bocchino
+    - Loop-fusion optimization (Accel-inplace-SoA-fused) design/implementation
+
+*** Alexandre X. Duchateau
+    - Software-pipelining optimization (Accel-nested-axdn) design/implementation
+
+---------------------------------------------------------------------------
+
+[fn:shevtsov] M. Shevtsov, A. Soupikov, and A. Kapustin. "Highly parallel fast
+kd-tree construction for interactive ray tracing of dynamic scenes" /Computer
+Graphics Forum/, 26(3):395-404, 2007 
+
+[fn:manta] J. Bigler, A. Stephens and S. G. Parker "Design for Parallel
+Interactive Ray Tracing Systems" /Proceedings of the IEEE Symposium on
+Interactive Ray Tracing/, 2006

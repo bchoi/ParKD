@@ -1,0 +1,110 @@
+# Copyright (c) 2010 University of Illinois
+# All rights reserved.
+#
+# Developed by:           DeNovo group, Graphis@Illinois
+#                         University of Illinois
+#                         http://denovo.cs.illinois.edu
+#                         http://graphics.cs.illinois.edu
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimers.
+#
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following disclaimers
+#    in the documentation and/or other materials provided with the
+#    distribution.
+#
+#  * Neither the names of DeNovo group, Graphics@Illinois, 
+#    University of Illinois, nor the names of its contributors may be used to 
+#    endorse or promote products derived from this Software without specific 
+#    prior written permission.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+
+include $(LEVEL)/Makefile.tbb_version
+
+ifndef VERBOSE
+MAKEFLAGS = -s
+endif
+
+.SECONDARY: %.blob %.obj
+
+# External Utilities
+BUNZIP2 = /usr/bin/bunzip2
+UPTIME = /usr/bin/uptime
+ECHO = /bin/echo
+SLEEP = /bin/sleep
+
+# Internal Utilities
+SINGLE=$(LEVEL)/Exec/single # Manta renderer
+PACKER_EXEC = $(LEVEL)/packer # object packer (.obj -> .blob)
+
+# Set ACCEL_DIR in your environment variable if you want a different one
+ACCEL_DIR ?= Accel-inplace-SoA
+ACCEL = $(LEVEL)/$(ACCEL_DIR)
+PARKD = $(LEVEL)/ParKD
+PACKER = $(LEVEL)/Packer
+TESTS = $(LEVEL)/Tests
+COMMON = $(LEVEL)/Common
+MERGESORT = $(LEVEL)/ParallelMergeSort
+RESULTS = $(LEVEL)/Results
+BUILD_DIR = bin
+
+# Source file search path
+vpath %.h $(ACCEL):$(PARKD):$(COMMON):$(MERGESORT)
+vpath %.cpp $(ACCEL):$(PARKD):$(COMMON):$(MERGESORT)
+
+ALL_ACCEL = $(wildcard $(LEVEL)/Accel-*)
+ALL_DEV_ACCEL = $(wildcard $(LEVEL)/dev-Accel-*)
+ALL_SRC_DIR = $(wildcard $(PARKD)/*.cpp) $(wildcard $(COMMON)/*.cpp)
+ALL_SRC = $(notdir $(ALL_SRC_DIR))
+
+# Compiler Options
+FLAG = -I$(COMMON) -I$(PARKD) -I$(ACCEL) -I$(MERGESORT) -I$(TBB_INC) \
+       -funroll-loops -fomit-frame-pointer 
+FLAG_DBG = -I$(COMMON) -I$(PARKD) -I$(ACCEL) -I$(MERGESORT) -I$(TBB_INC)
+LFLAG =  -L$(TBB_LIB) -ltbb -ltbbmalloc -lpthread
+LFLAG_DBG = -L$(TBB_LIB) -ltbb_debug -ltbbmalloc_debug -lpthread
+
+CC = g++
+CC-NORMAL= $(CC) $(FLAG) -O3 
+CC-DEBUG= $(CC) -g $(FLAG_DBG)
+
+HEADERS = ${wildcard $(ACCEL)/*.h}  ${wildcard $(PARKD)/*.h}
+
+# Models
+TEAPOT=$(MODELS_DIR)/teapot.obj.bz2
+BUNNY=$(MODELS_DIR)/bunny.obj.bz2
+FAIRY=$(MODELS_DIR)/fairy.obj.bz2
+ANGEL=$(MODELS_DIR)/angel.obj.bz2
+DRAGON=$(MODELS_DIR)/dragon.obj.bz2
+HAPPY=$(MODELS_DIR)/happy.obj.bz2
+
+# MODELS_BZ2=$(wildcard $(MODELS_DIR)/*.obj.bz2)
+MODELS_BZ2=$(TEAPOT) $(BUNNY) $(FAIRY) $(ANGEL) $(DRAGON) $(HAPPY)
+MODELS=$(subst .bz2,,$(MODELS_BZ2))
+MODELS_PACKED=$(subst .obj,.blob,$(MODELS))
+
+# Smaller meshes used for regression testing
+TEST_MODELS=$(subst .bz2,,$(TEAPOT) $(BUNNY))
+TEST_MODELS_PACKED=$(subst .obj,.blob,$(TEST_MODELS))
+
+MODELS_DIR = $(TESTS)/Models
+SAMPLE_OUTPUT = $(LEVEL)/../sample_output
+
+# Host specific options
+BENCH_THREADS ?= 1 2 4 8 16
