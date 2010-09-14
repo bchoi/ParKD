@@ -36,7 +36,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 
 # TBB related stuff
-TBB_HOME = /opt/intel/tbb/2.2
+TBB_HOME = /opt/intel/tbb/3.0
 TBB_ARCH = /intel64/cc4.1.0_libc2.4_kernel2.6.16.21
 TBB_INC = $(TBB_HOME)/include
-TBB_LIB = $(TBB_HOME)/$(TBB_ARCH)/lib
+TBB_LIB = $(TBB_HOME)/lib/$(TBB_ARCH)
