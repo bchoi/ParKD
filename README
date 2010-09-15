@@ -38,7 +38,8 @@
                                  ParKD README
                                  ============
 
-Date: 2010-09-13 22:07:11 CDT
+Date: 2010-09-15 16:05:44 CDT
+
 
 
 Table of Contents
@@ -276,48 +277,12 @@ Table of Contents
 4.2 Credits
 -----------
 
-* Byn Choi
-  - Accel-nested algorithm design/implementation
-  - Accel-inplace-{AoS, SoA} algorithm design/implementation
-  - Packer
-  - Build system
-  - Documentation
-  
-* Rakesh Komuravelli
-  - Accel-nested algorithm design
-  - Shevtsov's [3] (Accel-shevtsov) implementation
-  
-* Victor Lu
-  - Original serial construction algorithm implementation
-  - Original ray tracing engine
-  - Accel-nested algorithm implementation
-  - Manta [4] integration
-  
-* Hyojin Sung
-  - Accel-nested algorithm design/implementation
-  - Parallel merge sort routine
-  - Code cleanup
-  - Documentation
-  
-* Robert L. Bocchino
-  - Loop-fusion optimization (Accel-inplace-SoA-fused) design/implementation
-  
-* Alexandre X. Duchateau
-  - Software-pipelining optimization (Accel-nested-axdn) design/implementation
-  
-  ---------------------------------------------------------------------------
-  
-  [1] Byn Choi, Rakesh Komuravelli, Victor Lu, Hyojin Sung, Robert
-  L. Bocchino, Sarita V. Adve, John C. Hart "Parallel SAH k-D Tree Construction"
-  Proceedings of High-Performance Graphics (HPG), June, 2010
-  
-  [2] "Array-of-Structs to Struct-of-Arrays" optimization
-  
-  [3] M. Shevtsov, A. Soupikov, and A. Kapustin. "Highly parallel fast
-  kd-tree construction for interactive ray tracing of dynamic scenes" /Computer
-  Graphics Forum/, 26(3):395-404, 2007
-  
-  [4] J. Bigler, A. Stephens and S. G. Parker "Design for Parallel
-  Interactive Ray Tracing Systems" /Proceedings of the IEEE Symposium on
-  Interactive Ray Tracing/, 2006
-  
+This software was developed by Byn Choi, Rakesh Komuravelli, Victor Lu, Hyojin
+Sung, and Robert L. Bocchino, who are members of DeNovo group and Graphics
+group at University of Illinois, Urbana-Champaign.
+
+[1] Byn Choi, Rakesh Komuravelli, Victor Lu, Hyojin Sung, Robert
+L. Bocchino, Sarita V. Adve, John C. Hart "Parallel SAH k-D Tree Construction"
+Proceedings of High-Performance Graphics (HPG), June, 2010
+
+[2] "Array-of-Structs to Struct-of-Arrays" optimization

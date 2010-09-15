@@ -265,41 +265,6 @@ Total build time (w/o Init)       :             15221367
 
 ** Credits
 
-*** Byn Choi
-    - Accel-nested algorithm design/implementation
-    - Accel-inplace-{AoS, SoA} algorithm design/implementation
-    - Packer
-    - Build system
-    - Documentation
-
-*** Rakesh Komuravelli
-    - Accel-nested algorithm design
-    - Shevtsov's [fn:shevtsov] (Accel-shevtsov) implementation
-
-*** Victor Lu
-    - Original serial construction algorithm implementation
-    - Original ray tracing engine
-    - Accel-nested algorithm implementation
-    - Manta [fn:manta] integration
-
-*** Hyojin Sung
-    - Accel-nested algorithm design/implementation
-    - Parallel merge sort routine
-    - Code cleanup
-    - Documentation
-
-*** Robert L. Bocchino
-    - Loop-fusion optimization (Accel-inplace-SoA-fused) design/implementation
-
-*** Alexandre X. Duchateau
-    - Software-pipelining optimization (Accel-nested-axdn) design/implementation
-
----------------------------------------------------------------------------
-
-[fn:shevtsov] M. Shevtsov, A. Soupikov, and A. Kapustin. "Highly parallel fast
-kd-tree construction for interactive ray tracing of dynamic scenes" /Computer
-Graphics Forum/, 26(3):395-404, 2007 
-
-[fn:manta] J. Bigler, A. Stephens and S. G. Parker "Design for Parallel
-Interactive Ray Tracing Systems" /Proceedings of the IEEE Symposium on
-Interactive Ray Tracing/, 2006
+This software was developed by Byn Choi, Rakesh Komuravelli, Victor Lu, Hyojin
+Sung, and Robert L. Bocchino, who are members of DeNovo group and Graphics
+group at University of Illinois, Urbana-Champaign.
