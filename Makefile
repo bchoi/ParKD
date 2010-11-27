@@ -141,7 +141,7 @@ packer-debug:
 ###########################################################################
 
 # Benchmark for a specific impl (CSV output)
-benchmark-csv-%: idle_check parkd-% $(MODELS_PACKED) $(RESULTS)/%
+benchmark-csv-%: parkd-% idle_check $(MODELS_PACKED) $(RESULTS)/%
 	$(MAKE) -C $(RESULTS)/$* benchmark-csv
 
 # Benchmark all impl/s (CSV output)
