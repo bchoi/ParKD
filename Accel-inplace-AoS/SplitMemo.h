@@ -44,7 +44,6 @@ class SplitMemo {
 public:
   uint nA, nB, split, axis, left, right, straddle;
   float SAH;
-  uint padding[16]; // needed to avoid false-sharing
 };
   
 #endif // _SPLITMEMO_H_

@@ -43,7 +43,6 @@
 class PrescanTab {
 public:
   uint nA, nB;
-  uint padding[14];
 };
 
 #endif // _PRESCANTAB_H_
