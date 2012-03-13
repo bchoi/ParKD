@@ -63,7 +63,7 @@ $(BUILD_DIR)/%.debug.o : %.cpp $(HEADERS)
 
 $(BUILD_DIR)/packer: $(SRC:%.cpp=$(BUILD_DIR)/%.o)
 	@$(ECHO) "     LINK  "$@
-	$(CC) -O3 $(FLAG) -o $@ $^
+	$(CC) -O3 $(FLAG) $(LFLAG) -o $@ $^
 
 $(BUILD_DIR)/packer-debug: $(SRC:%.cpp=$(BUILD_DIR)/%.debug.o)
 	@$(ECHO) "     LINK  "$@

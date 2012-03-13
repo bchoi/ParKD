@@ -40,6 +40,7 @@
 #include <fstream>
 #include <iterator>
 #include <map>
+#include <algorithm>
 
 #include "KdTreeAccel_base.h"
 

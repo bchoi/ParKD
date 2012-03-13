@@ -40,6 +40,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 
 #include "KdTreeAccel.h"
 #include "timers.h"

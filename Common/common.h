@@ -70,5 +70,6 @@ extern ofstream outfile;
 #endif
 
 typedef unsigned long long uint64;
+typedef unsigned int uint;
 
 #endif // _COMMON_H_

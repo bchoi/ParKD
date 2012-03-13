@@ -40,6 +40,8 @@
 #ifndef _BOXEDGE_INPLACE_H_
 #define _BOXEDGE_INPLACE_H_
 
+#include <limits>
+
 #include "BoxEdge.h"
 
  // forward declaration - circular dependency
@@ -58,7 +60,7 @@ public:
   Triangle_aux *tri;
 
   BoxEdge_inplace() : BoxEdge(std::numeric_limits<float>::max(), 0, 0, 0), tri(NULL) {}
-  BoxEdge_inplace(float t, uint tri_idx, bool type, char axis) :
+  BoxEdge_inplace(float t, unsigned int tri_idx, bool type, char axis) :
     BoxEdge(t, tri_idx, type, axis), tri(NULL) {}
 };
 

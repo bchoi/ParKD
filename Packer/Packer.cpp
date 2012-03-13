@@ -38,6 +38,7 @@
 */
 
 #include <fstream>
+#include <cstdlib>
 
 #include "TriangleMesh.h"
 

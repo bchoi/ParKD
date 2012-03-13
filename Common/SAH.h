@@ -40,6 +40,7 @@
 #ifndef _SAH_H_
 #define _SAH_H_
 
+#include "common.h"
 #include "BoundingBox.h"
 
 #define Ct_DEFAULT 15.0f

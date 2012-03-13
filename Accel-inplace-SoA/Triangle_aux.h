@@ -51,7 +51,7 @@
 struct Triangle_aux {
   // layout [ Xs, Xe, Ys, Ye, Zs, Ze ]
   BoxEdge_inplace *edges[6];
-  uint triangleIndex;
+  unsigned int triangleIndex;
   unsigned char membership_size;
   unsigned char membership[11];
 };

@@ -42,6 +42,8 @@
 
 #include <iostream>
 
+#include "common.h"
+
 class Stats_base {
 public:
   Stats_base(uint maxDepth) : m_maxDepth(maxDepth) {}

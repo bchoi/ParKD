@@ -40,6 +40,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <stdio.h>
 
 #include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>

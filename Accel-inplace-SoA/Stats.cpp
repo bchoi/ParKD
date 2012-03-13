@@ -38,6 +38,7 @@
 */
 
 #include <iostream>
+#include <cstring>
 
 #include "Stats.h"
 #include "options.h"

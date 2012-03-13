@@ -38,6 +38,7 @@
 */
 
 #include <iomanip>
+#include <stdio.h>
 
 #include <tbb/task_scheduler_init.h>
 #include <tbb/partitioner.h>
